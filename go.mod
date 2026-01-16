@@ -1,4 +1,4 @@
-module github.com/go-gost/gost
+module github.com/jtduan/gost
 
 go 1.24.0
 
@@ -6,12 +6,11 @@ toolchain go1.24.5
 
 require (
 	github.com/go-gost/core v0.3.3
-	github.com/go-gost/x v0.8.1
+	github.com/jtduan/x v1.0.1
 	github.com/judwhite/go-svc v1.2.1
 )
 
-<!--replace github.com/go-gost/x => ./x-->
-replace github.com/go-gost/x => github.com/jtduan/x
+replace github.com/go-gost/x => ./x
 
 require (
 	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137 // indirect
