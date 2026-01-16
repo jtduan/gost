@@ -1,0 +1,33 @@
+## ./gost -C gost.yaml
+services:
+  - name: service-0
+    addr: ":8000"
+    handler:
+      type: auto
+      auther: auth-http
+      chain: chain-0
+      metadata:
+        foo: bar
+    listener:
+      type: tcp
+      metadata:
+        abc: xyz
+log:
+  level: debug
+
+authers:
+  - name: auth-http
+    plugin:
+      type: http
+      addr: http://127.0.0.1:8080/auth
+
+chains:
+  - name: chain-0
+    hops:
+      - name: hop-0
+hops:
+  - name: hop-0
+    plugin:
+      type: http
+      timeout: 500ms
+      addr: http://127.0.0.1:8080/hop
