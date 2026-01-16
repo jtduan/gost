@@ -10,6 +10,8 @@ require (
 	github.com/judwhite/go-svc v1.2.1
 )
 
+replace github.com/go-gost/x => ./x
+
 require (
 	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137 // indirect
 	github.com/alessio/shellescape v1.4.1 // indirect
@@ -28,7 +30,7 @@ require (
 	github.com/gin-contrib/cors v1.7.2 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.10.1 // indirect
-	github.com/go-gost/go-shadowsocks2 v0.1.1 // indirect
+	github.com/go-gost/go-shadowsocks2 v0.1.2 // indirect
 	github.com/go-gost/gosocks4 v0.0.1 // indirect
 	github.com/go-gost/gosocks5 v0.4.2 // indirect
 	github.com/go-gost/plugin v0.2.1 // indirect
