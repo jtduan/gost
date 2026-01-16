@@ -38,6 +38,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Checkout x
+        uses: actions/checkout@v4
+        with:
+          repository: jtduan/x
+          path: x
+
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
@@ -90,6 +96,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Checkout x
+        uses: actions/checkout@v4
+        with:
+          repository: jtduan/x
+          path: x
 
       - uses: actions/setup-go@v5
         with:
