@@ -1,41 +1,129 @@
-name: goreleaser
+name: build
 
 on:
   push:
     branches:
       - master
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - master
 
 permissions:
-  contents: write
-  # packages: write
-  # issues: write
+  contents: read
 
 jobs:
-  goreleaser:
+  build:
     runs-on: ubuntu-latest
+    if: github.ref_type != 'tag'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+          - goos: darwin
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
+          - goos: windows
+            goarch: amd64
+          - goos: windows
+            goarch: arm64
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - run: git fetch --force --tags
+
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.25'
+          go-version-file: go.mod
           cache: true
-      - name: Install UPX
-        uses: crazy-max/ghaction-upx@v3
-        with:
-          install-only: true
-      # More assembly might be required: Docker logins, GPG, etc. It all depends
-      # on your needs.
-      - uses: goreleaser/goreleaser-action@v6
-        with:
-          # either 'goreleaser' (default) or 'goreleaser-pro':
-          distribution: goreleaser
-          version: '~> v2'
-          args: release --clean
+
+      - name: Build
+        shell: bash
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Your GoReleaser Pro key, if you are using the 'goreleaser-pro'
-          # distribution:
-          # GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          VERSION=$(git describe --tags --always --dirty 2>/dev/null || echo unknown)
+          OUT="dist/gost_${GOOS}_${GOARCH}"
+          if [ "${GOOS}" = "windows" ]; then
+            OUT="${OUT}.exe"
+          fi
+          go build -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o "${OUT}" ./cmd/gost
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gost_${{ matrix.goos }}_${{ matrix.goarch }}
+          path: dist/
+
+  release:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+          - goos: darwin
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
+          - goos: windows
+            goarch: amd64
+          - goos: windows
+            goarch: arm64
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build and package
+        shell: bash
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+          VERSION: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+
+          BIN="gost"
+          OUTBIN="${BIN}_${GOOS}_${GOARCH}"
+          if [ "${GOOS}" = "windows" ]; then
+            OUTBIN="${OUTBIN}.exe"
+          fi
+
+          go build -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o "dist/${OUTBIN}" ./cmd/gost
+
+          if [ "${GOOS}" = "windows" ]; then
+            (cd dist && zip -9 "${BIN}_${VERSION}_${GOOS}_${GOARCH}.zip" "${OUTBIN}")
+          else
+            (cd dist && tar -czf "${BIN}_${VERSION}_${GOOS}_${GOARCH}.tar.gz" "${OUTBIN}")
+          fi
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.zip
+            dist/*.tar.gz
