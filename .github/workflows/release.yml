@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - master
-    # run only against tags
-    tags:
-      - 'v*'
 
 permissions:
   contents: write
