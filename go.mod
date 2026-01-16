@@ -10,7 +10,8 @@ require (
 	github.com/judwhite/go-svc v1.2.1
 )
 
-replace github.com/go-gost/x => ./x
+<!--replace github.com/go-gost/x => ./x-->
+replace github.com/go-gost/x => github.com/jtduan/x
 
 require (
 	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137 // indirect
