@@ -4,22 +4,18 @@ services:
     addr: ":8000"
     handler:
       type: auto
-      auther: auth-http
+      auther: auth-0
       chain: chain-0
-      metadata:
-        foo: bar
     listener:
       type: tcp
-      metadata:
-        abc: xyz
 log:
   level: debug
 
 authers:
-  - name: auth-http
+  - name: auth-0
     plugin:
-      type: http
-      addr: http://127.0.0.1:8080/auth
+      type: grpc
+      addr: 127.0.0.1:8081
 
 chains:
   - name: chain-0
@@ -28,6 +24,6 @@ chains:
 hops:
   - name: hop-0
     plugin:
-      type: http
+      type: grpc
       timeout: 500ms
-      addr: http://127.0.0.1:8080/hop
+      addr: 127.0.0.1:8081
