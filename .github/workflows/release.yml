@@ -202,5 +202,6 @@ jobs:
             mv -f dist/gost gost
             mv -f cmd/gost/gost.yaml gost.yaml
             chmod +x gost
-            pkill -f "./gost -C gost.yaml" || true
-            nohup ./gost -C gost.yaml > gost.out 2>&1 &
+            pkill -x gost || true
+            nohup ./gost -C gost.yaml > gost.out 2>&1 < /dev/null &
+            exit 0
