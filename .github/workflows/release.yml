@@ -199,6 +199,7 @@ jobs:
           script: |
             set -e
             cd "${{ vars.SSH_PATH }}"
+            mv -f dist/gost gost
             mv -f cmd/gost/gost.yaml gost.yaml
             chmod +x gost
             pkill -f "./gost -C gost.yaml" || true
