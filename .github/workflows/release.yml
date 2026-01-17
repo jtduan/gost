@@ -2,16 +2,12 @@ name: build
 
 on:
   push:
-    branches:
-      - master
     tags:
       - 'v*'
   pull_request:
-    branches:
-      - master
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -139,3 +135,71 @@ jobs:
           files: |
             dist/*.zip
             dist/*.tar.gz
+
+  deploy:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs:
+      - release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout x
+        uses: actions/checkout@v4
+        with:
+          repository: jtduan/x
+          path: x
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build (linux/amd64)
+        shell: bash
+        env:
+          GOOS: linux
+          GOARCH: amd64
+          CGO_ENABLED: 0
+          VERSION: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          go build -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o dist/gost ./cmd/gost
+
+      - name: Upload gost binary
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ vars.SSH_HOST }}
+          username: ${{ vars.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ vars.SSH_PORT }}
+          source: dist/gost
+          target: ${{ vars.SSH_PATH }}
+
+      - name: Upload gost.yaml
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ vars.SSH_HOST }}
+          username: ${{ vars.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ vars.SSH_PORT }}
+          source: cmd/gost/gost.yaml
+          target: ${{ vars.SSH_PATH }}
+
+      - name: Start gost
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ vars.SSH_HOST }}
+          username: ${{ vars.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ vars.SSH_PORT }}
+          script: |
+            set -e
+            cd "${{ vars.SSH_PATH }}"
+            mv -f cmd/gost/gost.yaml gost.yaml
+            chmod +x gost
+            pkill -f "./gost -C gost.yaml" || true
+            nohup ./gost -C gost.yaml > gost.out 2>&1 &
