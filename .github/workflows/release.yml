@@ -189,6 +189,16 @@ jobs:
           source: cmd/gost/gost.yaml
           target: ${{ vars.SSH_PATH }}
 
+      - name: Upload watchdog.sh
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ vars.SSH_HOST }}
+          username: ${{ vars.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ vars.SSH_PORT }}
+          source: watchdog.sh
+          target: ${{ vars.SSH_PATH }}
+
       - name: Start gost
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -202,6 +212,11 @@ jobs:
             mv -f dist/gost gost
             mv -f cmd/gost/gost.yaml gost.yaml
             chmod +x gost
+            chmod +x watchdog.sh
+            if [ -f watchdog.pid ]; then
+              kill "$(cat watchdog.pid)" 2>/dev/null || true
+              rm -f watchdog.pid || true
+            fi
             pkill -x gost || true
-            nohup ./gost -C gost.yaml > gost.out 2>&1 < /dev/null &
+            nohup ./watchdog.sh > watchdog.out 2>&1 < /dev/null &
             exit 0
