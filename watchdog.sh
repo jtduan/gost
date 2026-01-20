@@ -3,7 +3,7 @@
 set -euo pipefail
 
 GOST_BIN=${GOST_BIN:-./gost}
-GOST_ARGS=${GOST_ARGS:-"-C gost.yaml"}
+GOST_ARGS=${GOST_ARGS:-"-C gost.yaml --api :8001"}
 OUT_FILE=${OUT_FILE:-gost.out}
 PIDFILE=${PIDFILE:-watchdog.pid}
 RESTART_DELAY_SEC=${RESTART_DELAY_SEC:-5}
