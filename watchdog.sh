@@ -5,20 +5,16 @@ set -euo pipefail
 GOST_BIN=${GOST_BIN:-./gost}
 GOST_ARGS=${GOST_ARGS:-"-C gost.yaml --api :8001"}
 OUT_FILE=${OUT_FILE:-gost.out}
-PIDFILE=${PIDFILE:-watchdog.pid}
 RESTART_DELAY_SEC=${RESTART_DELAY_SEC:-5}
 
-if [[ -f "${PIDFILE}" ]]; then
-  old_pid="$(cat "${PIDFILE}" || true)"
-  if [[ -n "${old_pid}" ]] && kill -0 "${old_pid}" 2>/dev/null; then
-    exit 0
+script_name="$(basename "$0")"
+for pid in $(pgrep -f "${script_name}" 2>/dev/null || true); do
+  if [[ "${pid}" != "$$" ]]; then
+    kill "${pid}" 2>/dev/null || true
   fi
-fi
-
-echo "$$" > "${PIDFILE}"
+done
 
 cleanup() {
-  rm -f "${PIDFILE}" || true
   pkill -x gost 2>/dev/null || true
 }
 
