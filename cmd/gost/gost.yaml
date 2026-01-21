@@ -8,8 +8,17 @@ services:
       chain: chain-0
     listener:
       type: tcp
+
 log:
-  level: debug
+  level: info
+  format: text
+  output: ./gost.log
+  rotation:
+    maxSize: 100
+    maxAge: 10
+    maxBackups: 3
+    localTime: false
+    compress: false
 
 authers:
   - name: auth-0

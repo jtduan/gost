@@ -27,7 +27,7 @@ trap cleanup EXIT INT TERM
 pkill -x gost 2>/dev/null || true
 
 while true; do
-  nohup ${GOST_BIN} ${GOST_ARGS} > "${OUT_FILE}" 2>&1 < /dev/null &
+  nohup ${GOST_BIN} ${GOST_ARGS} >> "${OUT_FILE}" 2>&1 < /dev/null &
   child_pid=$!
   wait "${child_pid}" || true
   sleep "${RESTART_DELAY_SEC}"
