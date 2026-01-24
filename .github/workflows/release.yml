@@ -213,9 +213,9 @@ jobs:
             mv -f cmd/gost/gost.yaml gost.yaml
             chmod +x gost
             chmod +x watchdog.sh
-            pgrep -f "(^|/)watchdog\\.sh(\\s|$)" \
-              | grep -v -x "$$" \
-              | xargs -r kill 2>/dev/null || true
+            pkill -f "(^|/)watchdog\\.sh([[:space:]]|$)" 2>/dev/null || true
+            sleep 1
+            pkill -9 -f "(^|/)watchdog\\.sh([[:space:]]|$)" 2>/dev/null || true
             pkill -x gost || true
             nohup ./watchdog.sh > watchdog.out 2>&1 < /dev/null &
             exit 0
