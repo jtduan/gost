@@ -213,9 +213,12 @@ jobs:
             mv -f cmd/gost/gost.yaml gost.yaml
             chmod +x gost
             chmod +x watchdog.sh
-            pkill -f "(^|/)watchdog\\.sh([[:space:]]|$)" 2>/dev/null || true
-            sleep 1
-            pkill -9 -f "(^|/)watchdog\\.sh([[:space:]]|$)" 2>/dev/null || true
+            for pid in $(pgrep -f "watchdog\\.sh" 2>/dev/null || true); do
+              if [ "$pid" != "$$" ]; then
+                kill "$pid" 2>/dev/null || true
+              fi
+            done
             pkill -x gost || true
+            sleep 1
             nohup ./watchdog.sh > watchdog.out 2>&1 < /dev/null &
             exit 0
