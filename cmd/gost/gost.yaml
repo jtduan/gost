@@ -1,13 +1,19 @@
 ## ./gost -C gost.yaml
 services:
   - name: service-0
-    addr: ":8000"
+    addr: ":9000"
     handler:
       type: auto
       auther: auth-0
       chain: chain-0
     listener:
       type: tcp
+
+api:
+  addr: ":9001"
+  pathPrefix: /api
+  accesslog: true
+  auther: auth-0
 
 log:
   level: info
@@ -24,7 +30,7 @@ authers:
   - name: auth-0
     plugin:
       type: grpc
-      addr: 127.0.0.1:8081
+      addr: 10.2.0.4:8081
 
 chains:
   - name: chain-0
@@ -35,4 +41,4 @@ hops:
     plugin:
       type: grpc
       timeout: 500ms
-      addr: 127.0.0.1:8081
+      addr: 10.2.0.4:8081
